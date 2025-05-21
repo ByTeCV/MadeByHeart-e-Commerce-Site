@@ -1,0 +1,57 @@
+/* Responsive styles for mobile view */
+@media (max-width: 700px) {
+  h1 {
+    font-size: 2.2em;
+    margin-top: 18px;
+  }
+  .collage-container {
+    gap: 8px;
+    margin: 18px auto 10px auto;
+  }
+  .collage-track {
+    gap: 10px;
+    padding-top: 10px;
+  }
+  .collage-track img {
+    height: 60px;
+    width: 60px;
+    border-radius: 10px;
+  }
+  button {
+    padding: 12px 18px;
+    font-size: 13px;
+    border-radius: 30px;
+  }
+  .products-container {
+    gap: 10px;
+    padding: 8px;
+  }
+  .product-item {
+    width: 140px;
+    padding: 8px;
+  }
+  .product-item h2 {
+    font-size: 1em;
+  }
+  .product-item p {
+    font-size: 0.95em;
+  }
+}
+@media (max-width: 400px) {
+  h1 {
+    font-size: 1.3em;
+  }
+  .collage-track img {
+    height: 38px;
+    width: 38px;
+    border-radius: 6px;
+  }
+  button {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+  .product-item {
+    width: 90px;
+    padding: 4px;
+  }
+}
