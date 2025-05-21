@@ -18,14 +18,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function addToCart(price) {
-        if (cartItems.has(price)) {
-            cartItems.set(price, cartItems.get(price) + 1);
+    // --- CART LOGIC FOR PRODUCTS PAGE ---
+    // Load cart from localStorage if present
+    let cartArray = JSON.parse(localStorage.getItem('cartPageItems') || '[]');
+    cartArray.forEach(item => {
+        cartItems.set(item.price, item.qty);
+    });
+
+    // Helper to convert cartItems Map to array with name, price, qty, and img
+    function getCartArray() {
+        const cartArray = [];
+        const added = new Set();
+        document.querySelectorAll('.product-item').forEach(productItem => {
+            const button = productItem.querySelector('.add-to-cart');
+            if (!button) return;
+            const price = parseFloat(button.getAttribute('data-price'));
+            const name = button.getAttribute('data-product');
+            const imgElem = productItem.querySelector('img');
+            let img = '';
+            if (imgElem) {
+                img = imgElem.src;
+            }
+            const key = name + '|' + price;
+            // Fix: check by name+price, not just price, so top-selling and main list both work
+            if (cartItems.has(key) && !added.has(key)) {
+                cartArray.push({ name, price, qty: cartItems.get(key), img });
+                added.add(key);
+            } else if (cartItems.has(price) && !added.has(key)) {
+                // fallback for old logic
+                cartArray.push({ name, price, qty: cartItems.get(price), img });
+                added.add(key);
+            }
+        });
+        return cartArray;
+    }
+
+    // Save cart to localStorage for cart page
+    function saveCartToLocalStorage() {
+        const cartArray = getCartArray();
+        localStorage.setItem('cartPageItems', JSON.stringify(cartArray));
+    }
+
+    // Update addToCart to use name+price as key for all products
+    function addToCart(price, name) {
+        const key = name + '|' + price;
+        if (cartItems.has(key)) {
+            cartItems.set(key, cartItems.get(key) + 1);
         } else {
-            cartItems.set(price, 1);
+            cartItems.set(key, 1);
         }
         updateCart();
-        showCart(); // Show cart when an item is added
+        showCart();
+        saveCartToLocalStorage();
     }
 
     function updateCart() {
@@ -34,20 +78,31 @@ document.addEventListener('DOMContentLoaded', () => {
         let total = 0;
         let itemCount = 0;
 
-        cartItems.forEach((quantity, price) => {
-            total += price * quantity; // Calculate the total price
-            itemCount += quantity; // Calculate the total number of items
+        cartItems.forEach((quantity, key) => {
+            // key can be either price (number) or name|price (string)
+            let price = 0;
+            if (typeof key === 'string' && key.includes('|')) {
+                price = parseFloat(key.split('|')[1]);
+            } else {
+                price = parseFloat(key);
+            }
+            if (!isNaN(price)) {
+                total += price * quantity;
+            }
+            itemCount += quantity;
         });
 
-        totalSpan.textContent = total; // Update the total price in the cart
-        itemCountSpan.textContent = itemCount; // Update the total item count in the cart
+        totalSpan.textContent = total;
+        itemCountSpan.textContent = itemCount;
     }
 
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    // Update event listeners to pass name
     addToCartButtons.forEach(button => {
         button.addEventListener('click', () => {
             const price = parseFloat(button.getAttribute('data-price'));
-            addToCart(price);
+            const name = button.getAttribute('data-product');
+            addToCart(price, name);
         });
     });
 });
